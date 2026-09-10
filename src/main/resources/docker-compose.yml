@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:latest
+    container_name: mysql_migracao_dados
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: migracao_dados
+      MYSQL_USER: fatura
+      MYSQL_PASSWORD: 123456
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ../../../files/scripts.sql:/docker-entrypoint-initdb.d/scripts.sql
+
+  batch-db:
+    image: mysql:latest
+    container_name: mysql_spring_batch
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: spring_batch
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 123456
+    ports:
+      - "3307:3306"
+    volumes:
+      - batch_db_data:/var/lib/mysql
+
+volumes:
+  db_data:
+  batch_db_data:

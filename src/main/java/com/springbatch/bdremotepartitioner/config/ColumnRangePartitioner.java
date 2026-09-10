@@ -39,8 +39,14 @@ public class ColumnRangePartitioner implements Partitioner {
    */
   @Override
   public Map<String, ExecutionContext> partition(int gridSize) {
-    int min = jdbcTemplate.queryForObject("SELECT MIN(" + column + ") from " + table, Integer.class);
-    int max = jdbcTemplate.queryForObject("SELECT MAX(" + column + ") from " + table, Integer.class);
+    Integer min = jdbcTemplate.queryForObject("SELECT MIN(" + column + ") from " + table, Integer.class);
+    Integer max = jdbcTemplate.queryForObject("SELECT MAX(" + column + ") from " + table, Integer.class);
+
+    if (min == null || max == null) {
+      throw new IllegalStateException("Não foi possível particionar a tabela '" + table
+          + "': nenhum valor encontrado na coluna '" + column + "' (tabela vazia?)");
+    }
+
     int targetSize = (max - min) / gridSize + 1;
 
     Map<String, ExecutionContext> result = new HashMap<>();
