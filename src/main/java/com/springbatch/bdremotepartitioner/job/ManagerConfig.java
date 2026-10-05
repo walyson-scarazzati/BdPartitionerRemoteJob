@@ -1,5 +1,6 @@
 package com.springbatch.bdremotepartitioner.job;
 
+import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -15,6 +16,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.dsl.IntegrationFlow;
+import org.springframework.integration.dsl.IntegrationFlows;
+import org.springframework.integration.jms.dsl.Jms;
 
 @Profile("manager")
 @Configuration
@@ -28,6 +32,15 @@ public class ManagerConfig {
 
     @Autowired
     private RemotePartitioningManagerStepBuilderFactory stepBuilderFactory;
+
+    @Bean
+    private IntegrationFlow outboundFlow(ActiveMQConnectionFactory connectionFactory){
+        return IntegrationFlows
+                .from(requests())
+                .handle(Jms.outboundAdapter(connectionFactory)
+                .destination("requests"))
+                        .get();
+    }
 
     public Job remotePartitionJob(@Qualifier("migrarPessoaStep") Step migrarPessoaStep,
                                   @Qualifier("migrarDadosBancarios") Step migrarDadosBancariosStep){
